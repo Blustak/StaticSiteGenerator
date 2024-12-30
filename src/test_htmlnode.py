@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode
+from htmlnode import HTMLNode, LeafNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -54,6 +54,32 @@ class TestHTMLNode(unittest.TestCase):
             ' href="https://www.google.com"'
             + ' style="color:rgba(0,0,0,0);\nfont:comic sans"'
             + ' id="large_div" class="smol_div" alternate="very nice div"',
+        )
+
+
+class TestLeafNode(unittest.TestCase):
+    def test_constructor(self):
+        node = LeafNode("p", "Lorum Ipsum")
+        self.assertEqual(node.tag, "p")
+        self.assertEqual(node.value, "Lorum Ipsum")
+        self.assertIsNone(node.children)
+
+    def test_to_html(self):
+        node = LeafNode("p", "Lorum Ipsum")
+        self.assertEqual(
+            node.to_html(),
+            "<p>Lorum Ipsum</p>",
+            f"Error with node {node}",
+        )
+        node_with_props = LeafNode(
+            "p",
+            "Lorum Ipsum",
+            {"href": "google.com", "id": "coolio"},
+        )
+        self.assertEqual(
+            node_with_props.to_html(),
+            '<p href="google.com" id="coolio">Lorum Ipsum</p>',
+            f"Error with node:{node_with_props}",
         )
 
 
