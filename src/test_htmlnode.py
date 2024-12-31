@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -81,6 +81,101 @@ class TestLeafNode(unittest.TestCase):
             '<p href="google.com" id="coolio">Lorum Ipsum</p>',
             f"Error with node:{node_with_props}",
         )
+
+
+class TestParentNode(unittest.TestCase):
+    def test_constructor(self):
+        node = ParentNode(None, None)
+        for v in (node.tag, node.value, node.children, node.props):
+            self.assertEqual(v, None)
+
+        t_children = [
+            LeafNode("p", "hey ya", {"artist": "Andre3000 (ice cold)"}),
+            LeafNode("span", "this was fun!"),
+        ]
+        t_props = {"href": "yahoo.co.jp"}
+        node_with_vals = ParentNode(
+            "p",
+            t_children,
+            props=t_props,
+        )
+        self.assertEqual(node_with_vals.tag, "p")
+        self.assertEqual(node_with_vals.children, t_children)
+        self.assertEqual(node_with_vals.props, t_props)
+        self.assertIsNone(node_with_vals.value)
+
+    def test_to_html_empty(self):
+        node = ParentNode("div", [])
+        node_expected = "<div></div>"
+        self.assertEqual(node.to_html(), node_expected)
+        node_props = ParentNode(
+            "div",
+            [],
+            {
+                "href": "google.ur.mom",
+                "style": "too_cool_for_school;",
+            },
+        )
+        node_props_expected = (
+            '<div href="google.ur.mom" style="too_cool_for_school;"></div>'
+        )
+        self.assertEqual(node_props_expected, node_props.to_html())
+
+    def test_to_html_1d(self):
+        children = [
+            LeafNode("p", "hello"),
+            LeafNode("p", "world", {"style": "colour:bluey;"}),
+        ]
+        node = ParentNode("div", children)
+        node_expected = (
+            "<div>"
+            + "<p>hello</p>"
+            + '<p style="colour:bluey;">'
+            + "world</p>"
+            + "</div>"
+        )
+
+        self.assertEqual(node_expected, node.to_html())
+
+    def test_to_html_nested(self):
+        child_list_1 = [
+            LeafNode("p", "hello"),
+            LeafNode("p", "world", {"style": "colour:bluey;"}),
+        ]
+        child_list_2 = [
+            LeafNode("a", "google", {"href": "google.com"}),
+            LeafNode("i", "tee hee", {
+                     "style": "size:1000pt;", "class": "bigBoi"}),
+        ]
+        parent_node_1 = ParentNode("div", child_list_1)
+        nested_list = [
+            LeafNode("p", "nesting!", {"layout": "flex"}),
+            ParentNode("div", child_list_2),
+            parent_node_1,
+        ]
+        node = ParentNode("div", nested_list)
+        expected = (
+            "<div>"
+            + '<p layout="flex">'
+            + "nesting!"
+            + "</p>"
+            + "<div>"
+            + '<a href="google.com">'
+            + "google"
+            + "</a>"
+            + '<i style="size:1000pt;" class="bigBoi">'
+            + "tee hee"
+            + "</i>"
+            + "</div>"
+            + "<div>"
+            + "<p>hello</p>"
+            + '<p style="colour:bluey;">'
+            + "world"
+            + "</p>"
+            + "</div>"
+            + "</div>"
+        )
+        self.assertEqual(node.to_html(), expected)
 
 
 if __name__ == "__main__":

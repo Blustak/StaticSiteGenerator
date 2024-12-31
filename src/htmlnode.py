@@ -58,3 +58,25 @@ class LeafNode(HTMLNode):
         if self.tag is None:
             return str(self.value)
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+
+
+class ParentNode(HTMLNode):
+    # Tag and Children are not optional.
+    # Parent nodes do not have values
+    # props are optional
+    def __init__(self, tag, children, props=None):
+        super().__init__(tag, None, children, props)
+
+    def to_html(self):
+        if self.tag is None:
+            raise ValueError(f"Error: tag of {self} cannot be NoneType")
+        if self.children is None:
+            raise ValueError(
+                f"Error: children property of {self} cannot be NoneType",
+            )
+        else:
+            return (
+                f"<{self.tag}{self.props_to_html()}>"
+                + "".join(map(lambda x: x.to_html(), self.children))
+                + f"</{self.tag}>"
+            )
