@@ -14,10 +14,18 @@ def extract_markdown_images(text):
     returns: [("cat", "www.cat.com/cat.jpg")]
     """
 
-    matches = re.findall(r"\[(.*?)\]\((.*?)\)", text)
-    print(matches)
+    matches = re.findall(r"!\[(.*?)\]\((.*?)\)", text)
     return matches
 
 
 def extract_markdown_links(text):
-    pass
+    """
+    returns a list of tuples, where each tuple contains the anchor text
+    and the URL.
+
+    Example: "This text contains [cat](www.cat.com/cat.jpg) a cool cat!"
+    returns: [("cat", "www.cat.com/cat.jpg")]
+    """
+
+    matches = re.findall(r"[^!]\[(.*?)\]\((.*?)\)", text)
+    return matches
