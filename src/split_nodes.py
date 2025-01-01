@@ -16,6 +16,7 @@ def split_nodes_delimiter(
             current_type = type_a
         split_string = node.text.split(delimiter)
         for s in split_string:
-            node_list.append(TextNode(s, current_type))
-            current_type = type_b if current_type is type_a else type_a
+            if len(s) > 0:
+                node_list.append(TextNode(s, current_type))
+                current_type = type_b if current_type is type_a else type_a
     return node_list
