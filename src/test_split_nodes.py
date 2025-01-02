@@ -145,19 +145,38 @@ class TestSplitNodesImageLink(unittest.TestCase):
         self.assertListEqual(expected, new_nodes)
 
     def test_multiple_combo(self):
-        text = """
-        I am a long, complex string, with line breaks and
-        all sorts in me. I have a ![few](pic.jpg) bits of markdown sprinkled
-        around, but some [are](malformed.
-        So, let's [see](cool.com) if this program ![can](tell.the) difference,
-        and if ![both](functions)[can](work)!![in](tandem)[peace](boop)"""
+        text = "\n".join(
+            (
+                "I am a long, complex string, with line breaks and",
+                "all sorts in me. I have a ![few](pics.jpg)"
+                + " bits of markdown sprinkled",
+                "around, but some [are](malformed.",
+                "So, let's [see](cool.com)"
+                + " if this program ![can](tell.the) difference,",
+                "and if ![both](functions)"
+                + "[can](work)!"
+                + "![in](tandem)[peace](boop)",
+            )
+        )
         text = text.strip()
         node = TextNode(text, TextType.TEXT)
-        new_node_links = split_nodes_link(node)
-        new_node_images = split_nodes_image(node)
+        new_node_links = split_nodes_link([node])
+        new_node_images = split_nodes_image([node])
 
-        new_node_links_then_images = split_nodes_image(split_nodes_link(node))
-        new_node_images_then_links = split_nodes_link(split_nodes_image(node))
+        new_node_links_then_images = split_nodes_image(
+            split_nodes_link(
+                [
+                    node,
+                ]
+            )
+        )
+        new_node_images_then_links = split_nodes_link(
+            split_nodes_image(
+                [
+                    node,
+                ]
+            )
+        )
         expected_links = [
             TextNode(
                 "I am a long, complex string, with line breaks and"
@@ -170,7 +189,7 @@ class TestSplitNodesImageLink(unittest.TestCase):
             TextNode("see", TextType.LINK, "cool.com"),
             TextNode(
                 " if this program ![can](tell.the) difference,"
-                + "\n and if ![both](functions)",
+                + "\nand if ![both](functions)",
                 TextType.TEXT,
             ),
             TextNode("can", TextType.LINK, "work"),
@@ -191,22 +210,19 @@ class TestSplitNodesImageLink(unittest.TestCase):
                 TextType.TEXT,
             ),
             TextNode("can", TextType.IMAGE, "tell.the"),
-            TextNode(" difference,\nand if "),
+            TextNode(" difference,\nand if ", TextType.TEXT),
             TextNode("both", TextType.IMAGE, "functions"),
             TextNode("[can](work)!", TextType.TEXT),
             TextNode("in", TextType.IMAGE, "tandem"),
-            TextNode("[peace](boop)"),
+            TextNode("[peace](boop)", TextType.TEXT),
         ]
-        self.assertListEqual(
-            expected_links,
-        )
         expected_combo = [
             TextNode(
                 "I am a long, complex string, with line breaks and"
                 + "\nall sorts in me. I have a ",
                 TextType.TEXT,
             ),
-            TextNode("few", TextType.IMAGE, "pic.jpg"),
+            TextNode("few", TextType.IMAGE, "pics.jpg"),
             TextNode(
                 " bits of markdown sprinkled"
                 + "\naround, but some [are](malformed."
@@ -216,14 +232,13 @@ class TestSplitNodesImageLink(unittest.TestCase):
             TextNode("see", TextType.LINK, "cool.com"),
             TextNode(" if this program ", TextType.TEXT),
             TextNode("can", TextType.IMAGE, "tell.the"),
-            TextNode(" difference,\nand if "),
+            TextNode(" difference,\nand if ", TextType.TEXT),
             TextNode("both", TextType.IMAGE, "functions"),
             TextNode("can", TextType.LINK, "work"),
             TextNode("!", TextType.TEXT),
             TextNode("in", TextType.IMAGE, "tandem"),
             TextNode("peace", TextType.LINK, "boop"),
         ]
-
         self.assertListEqual(expected_links, new_node_links)
         self.assertListEqual(expected_images, new_node_images)
         self.assertListEqual(expected_combo, new_node_images_then_links)
