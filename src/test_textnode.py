@@ -1,6 +1,11 @@
 import unittest
 
-from textnode import TextNode, TextType, text_node_to_html_node
+from textnode import (
+    TextNode,
+    TextType,
+)
+
+from node_conversion import text_to_text_node, text_node_to_html_node
 
 
 class TestTextNode(unittest.TestCase):
@@ -12,7 +17,9 @@ class TestTextNode(unittest.TestCase):
     def test_neq(self):
         node = TextNode("This is a text node", TextType.BOLD)
         node2 = TextNode(
-            "This is a text node that is different", TextType.BOLD)
+            "This is a text node that is different",
+            TextType.BOLD,
+        )
         self.assertNotEqual(node, node2)
 
     def test_url_eq(self):
@@ -23,8 +30,11 @@ class TestTextNode(unittest.TestCase):
 
     def test_url_neq(self):
         node = TextNode("This is a text node", TextType.BOLD)
-        node2 = TextNode("This is a text node", TextType.BOLD,
-                         "some/path/to/something")
+        node2 = TextNode(
+            "This is a text node",
+            TextType.BOLD,
+            "some/path/to/something",
+        )
         self.assertNotEqual(node, node2)
 
     def test_type_neq(self):
@@ -81,6 +91,39 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         text_node = TextNode(None, None)
         with self.assertRaises(Exception):
             _ = text_node_to_html_node(text_node)
+
+
+class TestTextToTextNode(unittest.TestCase):
+    def test_empty(self):
+        text = ""
+        res = text_to_text_node(text)
+        expected = []
+        self.assertListEqual(res, expected)
+
+    def test_boot_dev_example(self):
+        text = (
+            "This is **text** with an *italic* word and a `code block`"
+            + " and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) "
+            + "and a [link](https://boot.dev)"
+        )
+        res = text_to_text_node(text)
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode(
+                "obi wan image",
+                TextType.IMAGE,
+                "https://i.imgur.com/fJRm4Vk.jpeg",
+            ),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        self.assertListEqual(res, expected)
 
 
 if __name__ == "__main__":
